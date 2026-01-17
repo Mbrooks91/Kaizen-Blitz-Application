@@ -1,0 +1,71 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+        
+    - name: Restore dependencies
+      run: dotnet restore src/KaizenBlitz.sln
+      
+    - name: Build solution
+      run: dotnet build src/KaizenBlitz.sln --configuration Release --no-restore
+      
+    - name: Run tests
+      run: dotnet test src/KaizenBlitz.Tests/KaizenBlitz.Tests.csproj --configuration Release --no-build --verbosity normal
+      
+    - name: Publish Windows EXE (Self-Contained)
+      run: |
+        dotnet publish src/KaizenBlitz.WPF/KaizenBlitz.WPF.csproj `
+          --configuration Release `
+          --runtime win-x64 `
+          --self-contained true `
+          --output publish/win-x64 `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:Version=${{ github.event.inputs.version }}
+          
+    - name: Publish Windows EXE (Framework-Dependent)
+      run: |
+        dotnet publish src/KaizenBlitz.WPF/KaizenBlitz.WPF.csproj `
+          --configuration Release `
+          --runtime win-x64 `
+          --self-contained false `
+          --output publish/win-x64-framework `
+          -p:PublishSingleFile=true `
+          -p:Version=${{ github.event.inputs.version }}
+    
+    - name: Create ZIP archives
+      run: |
+        Compress-Archive -Path publish/win-x64/* -DestinationPath KaizenBlitz-win-x64-standalone-v${{ github.event.inputs.version }}.zip
+        Compress-Archive -Path publish/win-x64-framework/* -DestinationPath KaizenBlitz-win-x64-framework-v${{ github.event.inputs.version }}.zip
+      shell: pwsh
+      
+    - name: Upload Self-Contained Build
+      uses: actions/upload-artifact@v3
+      with:
+        name: KaizenBlitz-Windows-Standalone-v${{ github.event.inputs.version }}
+        path: KaizenBlitz-win-x64-standalone-v${{ github.event.inputs.version }}.zip
+        
+    - name: Upload Framework-Dependent Build
+      uses: actions/upload-artifact@v3
+      with:
+        name: KaizenBlitz-Windows-Framework-v${{ github.event.inputs.version }}
+        path: KaizenBlitz-win-x64-framework-v${{ github.event.inputs.version }}.zip
