@@ -1,11 +1,9 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
+using System;
+using System.IO;
+using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.IO;
 using KaizenBlitz.Data;
 using KaizenBlitz.Data.Repositories;
 using KaizenBlitz.Core.Interfaces;
@@ -18,43 +16,32 @@ namespace KaizenBlitz.WPF;
 
 public partial class App : Application
 {
-    private ServiceProvider? _serviceProvider;
+    public static ServiceProvider? ServiceProvider { get; private set; }
 
-    public override void Initialize()
+    protected override void OnStartup(StartupEventArgs e)
     {
-        AvaloniaXamlLoader.Load(this);
-    }
+        base.OnStartup(e);
 
-    public override void OnFrameworkInitializationCompleted()
-    {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        ServiceProvider = services.BuildServiceProvider();
+
+        // Run database migrations
+        using (var scope = ServiceProvider.CreateScope())
         {
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            _serviceProvider = services.BuildServiceProvider();
-
-            // Run database migrations
-            using (var scope = _serviceProvider.CreateScope())
+            try
             {
-                try
-                {
-                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    db.Database.Migrate();
-                    
-                    // Optionally seed data
-                    db.SeedData();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error initializing database: {ex.Message}");
-                }
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                db.Database.Migrate();
+                
+                // Optionally seed data
+                db.SeedData();
             }
-
-            // Show main window
-            desktop.MainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing database: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
-
-        base.OnFrameworkInitializationCompleted();
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -102,9 +89,10 @@ public partial class App : Application
         services.AddTransient<Tools.ActionPlanView>();
     }
 
-    protected override void Dispose(bool disposing)
+    protected override void OnExit(ExitEventArgs e)
     {
-        _serviceProvider?.Dispose();
-        base.Dispose(disposing);
+        (ServiceProvider as IDisposable)?.Dispose();
+        base.OnExit(e);
     }
 }
+

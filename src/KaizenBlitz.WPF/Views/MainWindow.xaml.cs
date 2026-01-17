@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+using System.Windows;
 using KaizenBlitz.WPF.ViewModels;
 
 namespace KaizenBlitz.WPF.Views;
