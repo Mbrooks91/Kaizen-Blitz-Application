@@ -1,0 +1,90 @@
+<Page x:Class="KaizenBlitz.WPF.Views.Tools.FiveWhysView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      Title="Five Whys Analysis">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Grid.Column="0" Text="Five Whys Analysis" FontSize="24" FontWeight="Bold"/>
+            
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Content="SAVE" Command="{Binding SaveCommand}" Margin="0,0,8,0"/>
+                <Button Content="EXPORT PDF" Command="{Binding ExportPdfCommand}" Margin="0,0,8,0"/>
+                <Button Content="MARK COMPLETE" Command="{Binding MarkCompleteCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+                <TextBox Text="{Binding ProblemStatement}"
+                        materialDesign:HintAssist.Hint="Problem Statement*"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        AcceptsReturn="True"
+                        MinLines="2"/>
+
+                <TextBox Text="{Binding Why1}"
+                        materialDesign:HintAssist.Hint="Why 1: Why did this problem occur?"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+
+                <TextBox Text="{Binding Why2}"
+                        materialDesign:HintAssist.Hint="Why 2"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+
+                <TextBox Text="{Binding Why3}"
+                        materialDesign:HintAssist.Hint="Why 3"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+
+                <TextBox Text="{Binding Why4}"
+                        materialDesign:HintAssist.Hint="Why 4"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+
+                <TextBox Text="{Binding Why5}"
+                        materialDesign:HintAssist.Hint="Why 5"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+
+                <Button Content="ADD ANOTHER WHY" Command="{Binding AddWhyCommand}" HorizontalAlignment="Left"/>
+
+                <ItemsControl ItemsSource="{Binding AdditionalWhys}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" Text="{Binding}" Margin="0,0,8,0"/>
+                                <Button Grid.Column="1" Content="Remove" 
+                                       Command="{Binding DataContext.RemoveWhyCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                       CommandParameter="{Binding}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBox Text="{Binding RootCause}"
+                        materialDesign:HintAssist.Hint="Root Cause*"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        AcceptsReturn="True"
+                        MinLines="2"
+                        BorderBrush="{StaticResource ErrorRedBrush}"
+                        BorderThickness="2"/>
+
+                <CheckBox IsChecked="{Binding IsCompleted}" Content="Analysis Completed"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

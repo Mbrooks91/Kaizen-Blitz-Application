@@ -1,0 +1,26 @@
+{
+  "name": "Kaizen Blitz .NET Development",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:0-6.0",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:1": {
+      "version": "6.0"
+    },
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "formulahendry.dotnet-test-explorer",
+        "jchannon.csharpextensions"
+      ],
+      "settings": {
+        "omnisharp.useModernNet": true
+      }
+    }
+  },
+  "postCreateCommand": "cd src && dotnet restore KaizenBlitz.sln",
+  "remoteUser": "vscode"
+}

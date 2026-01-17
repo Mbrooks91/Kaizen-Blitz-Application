@@ -1,0 +1,37 @@
+name: .NET Build and Test
+
+on: 
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    
+    - name: Restore dependencies
+      run: dotnet restore src/KaizenBlitz.sln
+    
+    - name: Build
+      run: dotnet build src/KaizenBlitz.sln --no-restore --configuration Release
+    
+    - name: Test
+      run: dotnet test src/KaizenBlitz.sln --no-build --configuration Release --verbosity normal
+    
+    - name: Publish
+      run: dotnet publish src/KaizenBlitz.WPF/KaizenBlitz.WPF.csproj --configuration Release --output ./publish
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: kaizen-blitz-app
+        path: ./publish
